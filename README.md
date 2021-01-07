@@ -70,29 +70,20 @@ $ oc create sa non-root-user-id
 serviceaccount/non-root-user-id created
 
 2. Associate the service account with a non-root security context constraint
-To assign the non-root scc to a service account, you need to have the cluster admin privilege.  A service ticket can be submitted for this request.  
+To assign the non-root scc to a service account, you need to have the cluster admin privilege.
 
+oc adm policy add-scc-to-user nonroot -z non-root-user-id
 
-Here is a sample ticket requesting non-root scc assigned to the "non-root-user-id" service account created from the previous step.
+3. Patch the deployment configuration
 
-3. Associate the service account in the deployment configuration
-Once the service account is created, it needs to be configured in the deployment configuration.  The following highlighted lines need to be inserted in deployment configuration template to take the service account as a parameter.  
+oc patch dc/httpd --patch '{"spec":{"template":{"spec":{"serviceAccountName": "non-root-user-id"}}}}'
 
+deploymentconfig.apps.openshift.io/httpd patched
 
+4. Patch the dc with  the user id in the deployment configuration
 
+oc patch dc/test-container --patch '{"spec":{"template":{"spec":{"securityContext":{"runAsUser": 1098}}}}}}'
 
-
-
-
-
-The service account name is configured in the ocp_params.txt file in the common directory which applies to all the environments from dev to prod.
-
-
-
-4. Specify the user id in the deployment configuration
-For service account associated with the non-root scc, the userid also needs be configured in the deployment configuration.  The following highlighted lines need to be inserted in deployment configuration template to take the userid as a parameter.
-
-
-
+This step is NOT needed for root scc.
 
 
